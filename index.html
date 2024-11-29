@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>パスワード認証</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>保護されたコンテンツ</h1>
+        <p>このページはパスワードで保護されています。</p>
+    </div>
+
+    <script>
+        document.body.style.display = 'none';
+
+        function checkPassword() {
+            let userInput = null;
+            const cookies = document.cookie;
+            const cookiesArray = cookies.split(';');
+            const pass = 'Ri1jbGFzcy52aWRlbw=='; // "F-class.video"のBase64エンコード値
+            
+            for(let c of cookiesArray) {
+                const cArray = c.split('=');
+                if(cArray.indexOf('auth-cookie') > -1) {
+                    userInput = decodeURIComponent(cArray[1]);
+                }
+            }
+            
+            if(!(userInput && userInput === window.atob(pass))) {
+                userInput = prompt("パスワードを入力してください:", "");
+                
+                if(!userInput) {
+                    document.body.innerHTML = "<h1 style='color: red; text-align: center; margin-top: 50px;'>アクセスする権限がないため拒否されました</h1>";
+                    document.body.style.display = 'block';
+                    return;
+                }
+                
+                if(userInput !== window.atob(pass)) {
+                    alert("パスワードが間違っています");
+                    checkPassword(); // 再度パスワード入力を要求
+                    return;
+                }
+                
+                const now = new Date();
+                now.setHours(now.getHours() + 24);
+                document.cookie = "auth-cookie=" + encodeURIComponent(userInput) + 
+                                ";expires=" + now.toUTCString() + 
+                                ";path=/";
+            }
+            
+            window.location.href = "https://google.com/";
+        }
+
+        window.onload = function() {
+            checkPassword();
+        }
+
+        // F12キー無効化
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
